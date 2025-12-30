@@ -57,40 +57,51 @@ export async function POST(req: Request) {
       );
     }
 
-    // Pick agent with smallest activeTickets
-    let pick: { id: string; data: any } | null = null;
-    agentsSnap.forEach(doc => {
-      const data = doc.data();
-      const active = Number(data.activeTickets || 0);
-      if (!pick || active < Number(pick.data.activeTickets || 0)) {
-        pick = { id: doc.id, data };
-      }
+    // Pick agent with smallest activeTickets (TypeScript-safe)
+    const agents = agentsSnap.docs.map(doc => ({
+      id: doc.id,
+      data: doc.data(),
+    }));
+
+    if (agents.length === 0) {
+      return NextResponse.json(
+        { error: "No agents available" },
+        { status: 200 }
+      );
+    }
+
+    const selected = agents.reduce((prev, curr) => {
+      const prevActive = Number(prev.data.activeTickets || 0);
+      const currActive = Number(curr.data.activeTickets || 0);
+      return currActive < prevActive ? curr : prev;
     });
 
-    if (!pick)
-      return NextResponse.json({ error: "No agent selected" }, { status: 500 });
+    // Extract immutable values
+    const agentId: string = selected.id;
+    const agentData = selected.data;
 
-    // Use transaction to avoid race
+    // Use transaction to avoid race conditions
     await firestore.runTransaction(async tx => {
-      const agentRef = firestore.collection("users").doc(pick!.id);
+      const agentRef = firestore.collection("users").doc(agentId);
       const agentSnap = await tx.get(agentRef);
-      const agentData = agentSnap.exists ? agentSnap.data() : {};
-      const newActive = (agentData?.activeTickets || 0) + 1;
+      const agentDataTx = agentSnap.exists ? agentSnap.data() : {};
+      const newActive = (agentDataTx?.activeTickets || 0) + 1;
 
       tx.update(agentRef, { activeTickets: newActive });
       tx.update(ticketRef, {
-        assignedAgentId: pick!.id,
+        assignedAgentId: agentId,
         status: "in_progress",
         assignedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
     });
 
-    // Optionally create a notification for the assigned agent (can be consumed by client)
+    // Create notification
     const notifRef = firestore
       .collection("users")
-      .doc(pick.id)
+      .doc(agentId)
       .collection("notifications")
       .doc();
+
     await notifRef.set({
       title: "New ticket assigned",
       ticketId,
@@ -98,7 +109,10 @@ export async function POST(req: Request) {
       read: false,
     });
 
-    return NextResponse.json({ assignedAgentId: pick.id, agent: pick.data });
+    return NextResponse.json({
+      assignedAgentId: agentId,
+      agent: agentData,
+    });
   } catch (err: any) {
     console.error("Assign ticket error:", err);
     return NextResponse.json(

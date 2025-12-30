@@ -1,7 +1,14 @@
-import { getMessages, sendMessage } from "@/lib/messages";
+import { getMessages } from "@/lib/messages";
+import { Message } from "@/lib/types";
 
-export default async function MessagesPage({ params }: any) {
-  const messages = await getMessages(params.ticketId);
+type PageProps = {
+  params: {
+    ticketId: string;
+  };
+};
+
+export default async function MessagesPage({ params }: PageProps) {
+  const messages: Message[] = await getMessages(params.ticketId);
 
   return (
     <div className="p-6">
