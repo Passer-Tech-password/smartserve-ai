@@ -16,22 +16,38 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
 };
 
-// Validate env vars
-if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "") {
-  throw new Error("Firebase configuration is missing in .env.local");
-}
+// ------------------------------------------
+// 2. Prevent Multiple App Instances & Handle Missing Config
+// ------------------------------------------
+let app;
 
-// ------------------------------------------
-// 2. Prevent Multiple App Instances
-// ------------------------------------------
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+// Check if config is valid
+const isConfigValid = !!firebaseConfig.apiKey && firebaseConfig.apiKey !== "";
+
+if (!isConfigValid) {
+  if (typeof window === "undefined") {
+     // Server-side / Build time: Warn but don't crash
+     console.warn("Firebase configuration is missing in environment variables. Skipping initialization.");
+  } else {
+     // Client-side: Warn aggressively, app will likely break
+     console.error("Firebase configuration is missing in .env.local! App will not function correctly.");
+  }
+} else {
+  try {
+      app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  } catch (error) {
+      console.error("Firebase initialization failed:", error);
+  }
+}
 
 // ------------------------------------------
 // 3. Export Firebase Services
 // ------------------------------------------
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const functions = getFunctions(app, "us-central1");
+// Use casts or fallbacks to prevent import crashes if app is undefined
+// Note: Using these services without valid config will throw at runtime, which is expected.
+export const auth = app ? getAuth(app) : ({} as any);
+export const db = app ? getFirestore(app) : ({} as any);
+export const functions = app ? getFunctions(app, "us-central1") : ({} as any);
 
 // Default export
 export default app;
