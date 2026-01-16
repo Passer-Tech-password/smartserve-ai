@@ -12,8 +12,9 @@ import {
   serverTimestamp,
   getDoc,
 } from "firebase/firestore";
-import { db, auth } from "@/lib/firebase";
+import { db, auth, firebaseReady } from "@/lib/firebase";
 import MessageBubble from "./MessageBubble";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function ChatBox({ chatId }: { chatId: string }) {
   const [messages, setMessages] = useState<any[]>([]);
@@ -21,9 +22,12 @@ export default function ChatBox({ chatId }: { chatId: string }) {
   const [sending, setSending] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
 
   /* ------------------ LOAD MESSAGES ------------------ */
   useEffect(() => {
+    if (!firebaseReady) return;
     const q = query(
       collection(db, "messages", chatId, "chat"),
       orderBy("createdAt", "asc")
@@ -44,7 +48,15 @@ export default function ChatBox({ chatId }: { chatId: string }) {
   /* ------------------ SEND MESSAGE ------------------ */
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
-    if (!text.trim() || sending || !auth.currentUser) return;
+    if (!text.trim() || sending) return;
+    if (!firebaseReady) {
+      console.error("Firebase not initialized – check environment variables.");
+      return;
+    }
+    if (!auth.currentUser) {
+      console.error("User not authenticated – please sign in to chat.");
+      return;
+    }
 
     setSending(true);
 
@@ -97,6 +109,28 @@ export default function ChatBox({ chatId }: { chatId: string }) {
         ticketId = ticketRef.id;
 
         await setDoc(chatRef, { ticketId }, { merge: true });
+
+        if (pathname?.startsWith("/customer")) {
+          router.push(`/customer/tickets/${ticketId}`);
+          return;
+        } else if (pathname?.startsWith("/agent")) {
+          router.push(`/agent/tickets/${ticketId}`);
+          return;
+        }
+      }
+
+      /* 4.1️⃣ AUTO ASSIGN TO AGENT */
+      try {
+        await fetch("/api/tickets/assign", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ticketId,
+            preferDepartment: analysis?.department,
+          }),
+        });
+      } catch (err) {
+        console.error("Ticket auto-assign failed", err);
       }
 
       /* 5️⃣ AI RESPONSE */
@@ -116,13 +150,13 @@ export default function ChatBox({ chatId }: { chatId: string }) {
         console.error("AI respond failed", err);
       }
 
-      /* 6️⃣ BOT MESSAGE */
-      if (botResult?.reply && !botResult?.escalate) {
+      /* 6️⃣ BOT MESSAGE (always add reply) */
+      if (botResult?.reply) {
         await addDoc(collection(db, "messages", chatId, "chat"), {
           text: botResult.reply,
           senderId: "smartserve-bot",
           createdAt: serverTimestamp(),
-          meta: { confidence: botResult.confidence },
+          meta: { confidence: botResult?.confidence },
         });
       }
 
@@ -148,6 +182,11 @@ export default function ChatBox({ chatId }: { chatId: string }) {
     <div className="flex flex-col h-full">
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 bg-gray-100 space-y-2">
+        {!firebaseReady && (
+          <p className="text-sm text-red-600 text-center mt-4">
+            Firebase is not configured. Please set environment variables and redeploy.
+          </p>
+        )}
         {messages.length === 0 && (
           <p className="text-sm text-gray-500 text-center mt-10">
             👋 Say hello! Our AI assistant is ready to help.
@@ -173,10 +212,10 @@ export default function ChatBox({ chatId }: { chatId: string }) {
           onChange={e => setText(e.target.value)}
           placeholder="Type your message..."
           className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          disabled={sending}
+          disabled={sending || !firebaseReady}
         />
         <button
-          disabled={sending}
+          disabled={sending || !firebaseReady}
           className="bg-indigo-600 text-white px-5 rounded-lg text-sm disabled:opacity-50"
         >
           {sending ? "Sending..." : "Send"}

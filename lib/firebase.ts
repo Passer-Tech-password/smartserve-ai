@@ -40,6 +40,8 @@ if (!isConfigValid) {
   }
 }
 
+export const firebaseReady = !!app;
+
 // ------------------------------------------
 // 3. Export Firebase Services
 // ------------------------------------------

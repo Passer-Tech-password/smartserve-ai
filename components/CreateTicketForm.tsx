@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { addDoc, collection } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
 
 export default function CreateTicketForm() {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   async function handleSubmit(e: any) {
     e.preventDefault();
@@ -13,7 +15,7 @@ export default function CreateTicketForm() {
 
     const issue = e.target.issue.value;
 
-    await addDoc(collection(db, "tickets"), {
+    const ref = await addDoc(collection(db, "tickets"), {
       customerId: auth.currentUser?.uid,
       customerName: auth.currentUser?.email,
       issue,
@@ -22,6 +24,18 @@ export default function CreateTicketForm() {
       assignedAgentId: null,
       createdAt: new Date(),
     });
+
+    try {
+      await fetch("/api/tickets/assign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticketId: ref.id }),
+      });
+    } catch (err) {
+      console.error("Ticket auto-assign failed", err);
+    }
+
+    router.push(`/customer/tickets/${ref.id}`);
 
     e.target.reset();
     setLoading(false);
