@@ -17,8 +17,8 @@ export default function MessageBubble({
             isMe
               ? "bg-indigo-600 text-white rounded-br-sm"
               : isBot
-              ? "bg-white border text-gray-800 rounded-bl-sm"
-              : "bg-gray-200 text-gray-800 rounded-bl-sm"
+              ? "bg-white dark:bg-gray-700 border dark:border-gray-600 text-gray-800 dark:text-white rounded-bl-sm"
+              : "bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-white rounded-bl-sm"
           }`}
       >
         {text}

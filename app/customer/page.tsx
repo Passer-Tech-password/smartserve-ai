@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth, signOut } from "@/lib/auth";
 import Link from "next/link";
+import ThemeToggle from "@/app/components/ThemeToggle";
 
 export default function CustomerPage() {
   const user = useAuth();
@@ -21,23 +22,26 @@ export default function CustomerPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">Loading your dashboard...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors">
+        <p className="text-gray-500 dark:text-gray-400">Loading your dashboard...</p>
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Top Bar */}
-      <header className="bg-white border-b">
+      <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-0 z-10 transition-colors">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-800">SmartServe</h1>
-          <button
-            onClick={() => signOut()}
-            className="text-sm text-red-600 hover:underline"
-          >
-            Sign Out
-          </button>
+          <h1 className="text-xl font-bold text-gray-800 dark:text-white">SmartServe</h1>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <button
+              onClick={() => signOut()}
+              className="text-sm text-red-600 hover:underline dark:text-red-400"
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
       </header>
 
@@ -45,8 +49,8 @@ export default function CustomerPage() {
       <main className="max-w-6xl mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-800">Welcome 👋</h2>
-          <p className="text-gray-500 mt-1">
+          <h2 className="text-2xl font-semibold text-gray-800 dark:text-white">Welcome 👋</h2>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">
             Get help, track issues, and chat with support anytime.
           </p>
         </div>
@@ -54,12 +58,12 @@ export default function CustomerPage() {
         {/* Action Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {/* Chat Card */}
-          <div className="bg-white rounded-xl shadow-sm border p-6 flex flex-col justify-between">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 p-6 flex flex-col justify-between transition-colors">
             <div>
-              <h3 className="text-lg font-semibold text-gray-800">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
                 Start a Conversation
               </h3>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 Chat with our AI assistant or a support agent for quick help.
               </p>
             </div>
@@ -73,19 +77,19 @@ export default function CustomerPage() {
           </div>
 
           {/* Tickets Card */}
-          <div className="bg-white rounded-xl shadow-sm border p-6 flex flex-col justify-between">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 p-6 flex flex-col justify-between transition-colors">
             <div>
-              <h3 className="text-lg font-semibold text-gray-800">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
                 My Tickets
               </h3>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 View and track the status of your support tickets.
               </p>
             </div>
 
             <Link
               href="/customer/tickets"
-              className="mt-4 inline-flex items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-white text-sm font-medium hover:bg-gray-800 transition"
+              className="mt-4 inline-flex items-center justify-center rounded-lg bg-gray-900 dark:bg-gray-700 px-4 py-2 text-white text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-600 transition"
             >
               View Tickets
             </Link>
@@ -93,9 +97,9 @@ export default function CustomerPage() {
         </div>
 
         {/* Help Section */}
-        <div className="mt-10 bg-blue-50 border border-blue-100 rounded-xl p-6">
-          <h4 className="font-semibold text-blue-800">Need help faster?</h4>
-          <p className="text-sm text-blue-700 mt-1">
+        <div className="mt-10 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl p-6 transition-colors">
+          <h4 className="font-semibold text-blue-800 dark:text-blue-300">Need help faster?</h4>
+          <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
             Our AI assistant can answer common questions instantly before
             connecting you to a human agent.
           </p>

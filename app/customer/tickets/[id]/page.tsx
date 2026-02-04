@@ -33,24 +33,24 @@ export default function CustomerTicketDetailPage() {
   }, [id, router]);
 
   if (loading) {
-    return <div className="p-6 text-sm text-gray-500">Loading ticket...</div>;
+    return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Loading ticket...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors">
       {/* Header */}
-      <header className="bg-white border-b">
+      <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 transition-colors">
         <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-lg font-semibold text-gray-800">
+            <h1 className="text-lg font-semibold text-gray-800 dark:text-white">
               Ticket Details
             </h1>
-            <p className="text-xs text-gray-500">Ticket ID: {ticket.id}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Ticket ID: {ticket.id}</p>
           </div>
 
           <Link
             href="/customer/tickets"
-            className="text-sm text-blue-600 hover:underline"
+            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
           >
             ← Back to Tickets
           </Link>
@@ -60,8 +60,8 @@ export default function CustomerTicketDetailPage() {
       {/* Content */}
       <main className="max-w-5xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Ticket Info */}
-        <div className="bg-white rounded-xl border shadow-sm p-4 lg:col-span-1">
-          <h2 className="font-semibold mb-3">Ticket Information</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 shadow-sm p-4 lg:col-span-1 transition-colors">
+          <h2 className="font-semibold mb-3 text-gray-800 dark:text-white">Ticket Information</h2>
 
           <InfoRow label="Issue" value={ticket.issue} />
           <InfoRow label="Status" value={ticket.status} />
@@ -71,8 +71,8 @@ export default function CustomerTicketDetailPage() {
         </div>
 
         {/* Chat */}
-        <div className="bg-white rounded-xl border shadow-sm p-4 lg:col-span-2 flex flex-col">
-          <h2 className="font-semibold mb-3">Conversation</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 shadow-sm p-4 lg:col-span-2 flex flex-col transition-colors">
+          <h2 className="font-semibold mb-3 text-gray-800 dark:text-white">Conversation</h2>
 
           <div className="flex-1 min-h-[300px]">
             <ChatBox chatId={ticket.id} />
@@ -88,8 +88,8 @@ export default function CustomerTicketDetailPage() {
 function InfoRow({ label, value }: { label: string; value?: string }) {
   return (
     <div className="mb-3">
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="text-sm font-medium text-gray-800">{value || "—"}</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{value || "—"}</p>
     </div>
   );
 }

@@ -182,16 +182,16 @@ export default function ChatBox({ chatId }: { chatId: string }) {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-gray-100 dark:bg-gray-900 transition-colors">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-100 space-y-2">
+      <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {!firebaseReady && (
           <p className="text-sm text-red-600 text-center mt-4">
             Firebase is not configured. Please set environment variables and redeploy.
           </p>
         )}
         {messages.length === 0 && (
-          <p className="text-sm text-gray-500 text-center mt-10">
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center mt-10">
             👋 Say hello! Our AI assistant is ready to help.
           </p>
         )}
@@ -209,17 +209,17 @@ export default function ChatBox({ chatId }: { chatId: string }) {
       </div>
 
       {/* Input */}
-      <form onSubmit={sendMessage} className="p-4 bg-white border-t flex gap-2">
+      <form onSubmit={sendMessage} className="p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700 flex gap-2 transition-colors">
         <input
           value={text}
           onChange={e => setText(e.target.value)}
           placeholder="Type your message..."
-          className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="flex-1 border dark:border-gray-600 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 dark:text-white"
           disabled={sending || !firebaseReady}
         />
         <button
           disabled={sending || !firebaseReady}
-          className="bg-indigo-600 text-white px-5 rounded-lg text-sm disabled:opacity-50"
+          className="bg-indigo-600 text-white px-5 rounded-lg text-sm disabled:opacity-50 hover:bg-indigo-700 transition"
         >
           {sending ? "Sending..." : "Send"}
         </button>

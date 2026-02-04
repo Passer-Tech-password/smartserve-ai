@@ -5,7 +5,7 @@ import TicketTable from "@/components/TicketTable";
 export default function AdminDashboard() {
   return (
     <DashboardLayout role="admin">
-      <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Admin Dashboard</h1>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

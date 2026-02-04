@@ -3,18 +3,18 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
-import { useTheme } from "./ThemeProvider";
+import { useTheme } from "next-themes";
 import NavLink from "./NavLink";
 import { Menu, X } from "lucide-react";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar() {
-  const { toggleTheme } = useTheme();
   const [open, setOpen] = useState(false);
 
   return (
     <header className="w-full py-6 px-8 flex items-center justify-between 
-      bg-white/70 dark:bg-gray-800/50 backdrop-blur-md 
-      shadow-sm sticky top-0 z-50 transition-colors">
+      bg-white/70 dark:bg-gray-900/80 backdrop-blur-md 
+      shadow-sm sticky top-0 z-50 transition-colors border-b dark:border-gray-800">
 
       {/* Logo */}
       <motion.h1
@@ -27,7 +27,7 @@ export default function Navbar() {
       </motion.h1>
 
       {/* Desktop Navigation */}
-      <nav className="hidden md:flex gap-8 font-medium">
+      <nav className="hidden md:flex gap-8 font-medium text-gray-600 dark:text-gray-300">
         <NavLink href="/#features">Features</NavLink>
         <NavLink href="/#ai">AI</NavLink>
         <NavLink href="/#contact">Contact</NavLink>
@@ -35,13 +35,7 @@ export default function Navbar() {
 
       {/* Desktop actions */}
       <div className="hidden md:flex items-center gap-4">
-        <button
-          onClick={toggleTheme}
-          className="px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-700
-            hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-        >
-          🌙
-        </button>
+        <ThemeToggle />
 
         <Link
           href="/login"
@@ -54,7 +48,7 @@ export default function Navbar() {
 
       {/* Mobile Hamburger */}
       <button
-        className="md:hidden"
+        className="md:hidden text-gray-600 dark:text-gray-300"
         onClick={() => setOpen(!open)}
       >
         {open ? <X size={28} /> : <Menu size={28} />}
@@ -68,21 +62,20 @@ export default function Navbar() {
           className="absolute top-full left-0 w-full bg-white dark:bg-gray-900 
           flex flex-col items-start p-6 shadow-md border-t dark:border-gray-800 md:hidden"
         >
-          <NavLink href="/#features">Features</NavLink>
-          <NavLink href="/#ai">AI</NavLink>
-          <NavLink href="/#contact">Contact</NavLink>
+          <div className="flex flex-col gap-4 w-full mb-4 text-gray-600 dark:text-gray-300">
+             <NavLink href="/#features">Features</NavLink>
+             <NavLink href="/#ai">AI</NavLink>
+             <NavLink href="/#contact">Contact</NavLink>
+          </div>
 
-          <button
-            onClick={toggleTheme}
-            className="mt-4 px-3 py-2 w-full border rounded-xl border-gray-300 
-              dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-          >
-            Toggle Theme
-          </button>
+          <div className="w-full flex items-center justify-between mt-2 border-t dark:border-gray-800 pt-4">
+            <span className="text-sm text-gray-500 dark:text-gray-400">Switch Theme</span>
+            <ThemeToggle />
+          </div>
 
           <Link
             href="/login"
-            className="w-full mt-4 px-5 py-2 text-center bg-blue-600 text-white rounded-xl 
+            className="w-full mt-6 px-5 py-2 text-center bg-blue-600 text-white rounded-xl 
               shadow hover:bg-blue-700 transition"
           >
             Login

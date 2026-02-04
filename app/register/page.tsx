@@ -104,6 +104,7 @@ export default function RegisterPage() {
             >
               <option value="customer">Customer</option>
               <option value="agent">Support Agent</option>
+              <option value="admin">Admin (Dev Mode)</option>
             </select>
 
             <button
