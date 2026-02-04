@@ -1,0 +1,92 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ==========================================
+    // USERS COLLECTION
+    // ==========================================
+    match /users/{userId} {
+      // A signed-in user can read their own user document.
+      // Note: Agents might need to read user profiles in the future.
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // A signed-in user can create/update only their own data.
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+
+      // No user should delete their own profile unless app requires it.
+      allow delete: if false;
+    }
+
+
+    // ==========================================
+    // TICKETS COLLECTION
+    // Used for SmartServe support system
+    // ==========================================
+    match /tickets/{ticketId} {
+      // Customers create tickets
+      allow create: if request.auth != null;
+
+      // Only ticket owner OR support agent can read their ticket
+      // We check multiple fields (customerId, userId, createdBy) to match different parts of the app
+      allow read: if 
+        request.auth != null && 
+        ( 
+          request.auth.token.role == "agent" || 
+          request.auth.uid == resource.data.customerId ||
+          request.auth.uid == resource.data.userId ||
+          request.auth.uid == resource.data.createdBy
+        );
+
+      // Only agent or ticket owner can update ticket
+      allow update: if 
+        request.auth != null && 
+        ( 
+          request.auth.token.role == "agent" || 
+          request.auth.uid == resource.data.customerId ||
+          request.auth.uid == resource.data.userId ||
+          request.auth.uid == resource.data.createdBy
+        );
+
+      // Nobody deletes tickets (optional)
+      allow delete: if false;
+    }
+
+
+    // ==========================================
+    // CHATS COLLECTION
+    // Metadata for chats (linking tickets to chats)
+    // ==========================================
+    match /chats/{chatId} {
+      allow read, write: if request.auth != null;
+    }
+
+
+    // ==========================================
+    // MESSAGES COLLECTION
+    // Chat messages between customer and support
+    // Structure: messages/{chatId}/chat/{messageId}
+    // ==========================================
+    match /messages/{chatId}/chat/{messageId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null;
+      // Prevent tampering with chat history
+      allow update, delete: if false;
+    }
+    
+    // Also allow access to the parent structure if needed by queries
+    match /messages/{chatId} {
+      allow read: if request.auth != null;
+    }
+
+
+    // ==========================================
+    // DEFAULT RULE FOR SAFETY
+    // No writes allowed to unknown collections
+    // ==========================================
+    match /{document=**} {
+      allow read: if request.auth != null;    // Signed-in users can read general data 
+      allow write: if false;                  // No public writes anywhere else 
+    }
+  }
+}

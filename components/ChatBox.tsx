@@ -13,6 +13,7 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { db, auth, firebaseReady } from "@/lib/firebase";
+import { TicketBuilder } from "@/lib/TicketBuilder";
 import MessageBubble from "./MessageBubble";
 import { useRouter, usePathname } from "next/navigation";
 
@@ -93,18 +94,14 @@ export default function ChatBox({ chatId }: { chatId: string }) {
 
       /* 4️⃣ CREATE TICKET ONLY ON FIRST MESSAGE */
       if (!ticketId) {
-        const ticketRef = await addDoc(collection(db, "tickets"), {
-          customerId: uid,
-          customerName: auth.currentUser.email || null,
-          issue: messageText,
-          status: "open",
-          priority: "medium",
-          assignedAgentId: null,
-          createdAt: serverTimestamp(),
-          sentiment: analysis?.sentiment || "neutral",
-          suggestedDepartment: analysis?.department || "general",
-          aiKeywords: analysis?.keywords || [],
-        });
+        const ticket = new TicketBuilder(uid, messageText)
+          .setCustomerName(auth.currentUser.email || null)
+          .setSentiment(analysis?.sentiment || "neutral")
+          .setSuggestedDepartment(analysis?.department || "general")
+          .setAiKeywords(analysis?.keywords || [])
+          .build();
+
+        const ticketRef = await addDoc(collection(db, "tickets"), ticket);
 
         ticketId = ticketRef.id;
 
@@ -148,6 +145,12 @@ export default function ChatBox({ chatId }: { chatId: string }) {
         botResult = await r.json();
       } catch (err) {
         console.error("AI respond failed", err);
+        botResult = {
+          reply:
+            "I'm having trouble connecting to my brain right now. Please wait a moment while a human agent reviews your request.",
+          confidence: 0,
+          escalate: true,
+        };
       }
 
       /* 6️⃣ BOT MESSAGE (always add reply) */
