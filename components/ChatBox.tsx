@@ -13,11 +13,13 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { db, auth, firebaseReady } from "@/lib/firebase";
+import { useAuth } from "@/lib/auth";
 import { TicketBuilder } from "@/lib/TicketBuilder";
 import MessageBubble from "./MessageBubble";
 import { useRouter, usePathname } from "next/navigation";
 
 export default function ChatBox({ chatId }: { chatId: string }) {
+  const user = useAuth();
   const [messages, setMessages] = useState<any[]>([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -28,18 +30,21 @@ export default function ChatBox({ chatId }: { chatId: string }) {
 
   /* ------------------ LOAD MESSAGES ------------------ */
   useEffect(() => {
-    if (!firebaseReady) return;
+    if (!firebaseReady || !user) return;
+    
     const q = query(
       collection(db, "messages", chatId, "chat"),
       orderBy("createdAt", "asc")
     );
 
-    const unsub = onSnapshot(q, snap => {
-      setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    const unsub = onSnapshot(q, (snap) => {
+      setMessages(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    }, (error) => {
+      console.error("Chat snapshot error:", error);
     });
 
     return () => unsub();
-  }, [chatId]);
+  }, [chatId, user]);
 
   /* ------------------ AUTO SCROLL ------------------ */
   useEffect(() => {
